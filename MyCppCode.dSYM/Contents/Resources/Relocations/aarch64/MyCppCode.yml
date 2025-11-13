@@ -1,0 +1,5 @@
+---
+triple:          'arm64-apple-darwin'
+binary-path:     '/Users/moritzdroste/Documents/Coursework/CIS22C/openflights-website/MyCppCode'
+relocations:     []
+...

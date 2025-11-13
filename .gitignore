@@ -1,0 +1,111 @@
+# ===========================
+# Backend (C++ / CMake / Crow)
+# ===========================
+
+# Build directories
+build/
+cmake-build-*/
+bin/
+lib/
+
+# Compiled files
+*.o
+*.obj
+*.exe
+*.out
+*.app
+
+# CMake
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+*.cmake
+!CMakeLists.txt
+
+# Dependencies fetched by CMake
+_deps/
+
+# ===========================
+# Frontend (React / Vite / Tailwind)
+# ===========================
+
+# Dependencies
+frontend/node_modules/
+
+# Build output
+frontend/dist/
+frontend/build/
+
+# Vite
+frontend/.vite/
+
+# Environment files
+frontend/.env
+frontend/.env.local
+frontend/.env.production
+
+# Cache
+frontend/.cache/
+
+# Logs
+frontend/*.log
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+
+# Package manager lock files (keep package.json, ignore locks if preferred)
+# Uncomment if you want to ignore lock files:
+# frontend/package-lock.json
+# frontend/yarn.lock
+
+# ===========================
+# IDE / Editor
+# ===========================
+
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# ===========================
+# Data (optional - uncomment if data files are large)
+# ===========================
+
+# data/*.dat
+# data/*.csv
+
+# ===========================
+# Logs
+# ===========================
+
+*.log
+
+# ===========================
+# OS Files
+# ===========================
+
+.DS_Store
+Thumbs.dbles/
+cmake_install.cmake
+Makefile
+*.cmake
+!CMakeLists.txt
+
+# Dependencies
+_deps/
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.cache/
+frontend/package-lock.json
+
+# Data files (if large)
+data/*.dat
+# data/*.csv
+
+# Logs
+*.log
