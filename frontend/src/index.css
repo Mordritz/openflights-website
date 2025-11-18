@@ -1,21 +1,57 @@
 @import "tailwindcss";
 
 @layer utilities {
-  .gradient-bg {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  /* Premium gradient backgrounds */
+  .gradient-bg-home {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
   }
   
-  .gradient-bg-alt {
-    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  .gradient-bg-airports {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
   }
   
+  .gradient-bg-airlines {
+    background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+  }
+  
+  .gradient-bg-routes {
+    background: linear-gradient(135deg, #30cfd0 0%, #330867 100%);
+  }
+  
+  .gradient-bg-about {
+    background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+  }
+  
+  /* Glass morphism */
   .glass {
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(12px);
     border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
   }
   
-  .text-shadow {
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  .glass-dark {
+    background: rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  /* Text effects */
+  .text-shadow-strong {
+    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.3), 0 4px 24px rgba(0, 0, 0, 0.2);
+  }
+  
+  .text-glow {
+    text-shadow: 0 0 20px rgba(255, 255, 255, 0.5), 0 0 40px rgba(255, 255, 255, 0.3);
+  }
+  
+  /* Card elevation */
+  .card-elevated {
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08), 0 8px 16px rgba(0, 0, 0, 0.06);
+  }
+  
+  /* Smooth animations */
+  .transition-smooth {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 }

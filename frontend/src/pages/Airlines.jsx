@@ -92,21 +92,29 @@ export default function Airlines() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
-      <div className="bg-gradient-to-r from-purple-600 to-pink-600 pt-20 pb-32">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="text-4xl font-bold text-white mb-4">Airlines</h1>
+    <div className="min-h-screen bg-gray-50">
+      {/* Hero Header */}
+      <div className="gradient-bg-airlines pt-24 pb-40 relative overflow-hidden">
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-20 right-20 w-64 h-64 bg-white rounded-full blur-3xl"></div>
+          <div className="absolute bottom-10 left-20 w-96 h-96 bg-yellow-200 rounded-full blur-3xl"></div>
+        </div>
+        
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+          <h1 className="text-5xl font-bold text-white mb-6 text-shadow-strong">Airlines</h1>
+          <p className="text-xl text-white/90 mb-8">Discover airline networks across the globe</p>
+          
           <div className="flex gap-4">
             <input
               type="text"
-              placeholder="Search airlines..."
+              placeholder="Search by IATA code, name, or country..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="flex-1 px-4 py-2 rounded-lg border border-white/20 bg-white/10 text-white placeholder-white/70 focus:ring-2 focus:ring-white focus:border-transparent backdrop-blur-sm"
+              className="flex-1 px-6 py-4 rounded-xl border-0 bg-white/20 backdrop-blur-md text-white placeholder-white/70 focus:ring-2 focus:ring-white/50 focus:outline-none shadow-lg"
             />
             <button
               onClick={() => setShowCreateModal(true)}
-              className="px-6 py-2 bg-white text-purple-600 rounded-lg hover:bg-purple-50 transition-colors font-semibold shadow-lg"
+              className="px-8 py-4 bg-white text-pink-600 rounded-xl hover:bg-pink-50 transition-smooth font-bold shadow-xl hover:shadow-2xl transform hover:-translate-y-1"
             >
               + New Airline
             </button>
@@ -114,7 +122,8 @@ export default function Airlines() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-24 pb-12">
+      {/* Content Area */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-32 pb-16 relative">
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div className="bg-white rounded-lg shadow-lg overflow-hidden">

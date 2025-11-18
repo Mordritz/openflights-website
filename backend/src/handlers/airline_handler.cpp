@@ -27,9 +27,10 @@ void AirlineHandler::register_routes(crow::App<crow::CORSHandler>& app, DataStor
         
         std::vector<crow::json::wvalue> airports_json;
         for (const auto& result : results) {
-            crow::json::wvalue airport_data = result.airport.to_json();
-            airport_data["route_count"] = result.route_count;
-            airports_json.push_back(std::move(airport_data));
+            crow::json::wvalue item;
+            item["airport"] = result.airport.to_json();
+            item["route_count"] = result.route_count;
+            airports_json.push_back(std::move(item));
         }
         json["airports"] = std::move(airports_json);
         json["total_airports"] = results.size();

@@ -1,14 +1,22 @@
 export default function About() {
   return (
-    <div className="min-h-screen bg-white">
-      <div className="bg-gradient-to-r from-indigo-600 to-purple-600 pt-20 pb-32">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="text-4xl font-bold text-white mb-6">About FlightHub</h1>
+    <div className="min-h-screen bg-gray-50">
+      {/* Hero Header */}
+      <div className="gradient-bg-about pt-24 pb-40 relative overflow-hidden">
+        <div className="absolute inset-0 opacity-20">
+          <div className="absolute top-20 left-20 w-96 h-96 bg-teal-200 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-10 right-20 w-96 h-96 bg-pink-200 rounded-full blur-3xl"></div>
+        </div>
+        
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+          <h1 className="text-5xl font-bold text-gray-800 mb-6">About FlightHub</h1>
+          <p className="text-xl text-gray-700">Your gateway to global aviation data</p>
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 -mt-24 pb-12">
-        <div className="bg-white rounded-lg shadow-xl p-8 md:p-12">
+      {/* Content Area */}
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 -mt-32 pb-16 relative">
+        <div className="bg-white rounded-2xl shadow-2xl p-12 card-elevated">
           <h1 className="text-4xl font-bold text-gray-900 mb-6">About FlightHub</h1>
           
           <div className="prose prose-lg max-w-none">
