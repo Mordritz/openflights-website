@@ -70,9 +70,11 @@ public:
     bool modify_route(int airline_id, int source_airport_id, int dest_airport_id, 
                       const crow::json::rvalue& updates);
 
-    // 4. One-hop Report
-    std::vector<OneHopRoute> find_one_hop_routes(const std::string& source_iata, 
+    // 4. Route Finding
+    std::vector<OneHopRoute> find_one_hop_routes(const std::string& source_iata,
                                                    const std::string& dest_iata) const;
+    std::vector<OneHopRoute> find_direct_routes(const std::string& source_iata,
+                                                  const std::string& dest_iata) const;
 
     // Utility
     size_t get_airport_count() const { return airports_by_id_.size(); }

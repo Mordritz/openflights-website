@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
+import Footer from './components/Footer';
 import Home from './pages/Home';
 import Airports from './pages/Airports';
 import Airlines from './pages/Airlines';
@@ -9,7 +10,7 @@ import About from './pages/About';
 function App() {
   return (
     <BrowserRouter>
-      <div className="min-h-screen">
+      <div className="min-h-screen flex flex-col">
         <Navbar />
         <Routes>
           <Route path="/" element={<Home />} />
@@ -18,6 +19,7 @@ function App() {
           <Route path="/routes" element={<RoutesFinder />} />
           <Route path="/about" element={<About />} />
         </Routes>
+        <Footer />
       </div>
     </BrowserRouter>
   );

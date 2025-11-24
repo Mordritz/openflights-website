@@ -113,17 +113,17 @@ void AirportHandler::register_routes(crow::App<crow::CORSHandler>& app, DataStor
     ([&store](const crow::request& req) {
         auto source = req.url_params.get("source");
         auto dest = req.url_params.get("dest");
-        
+
         if (!source || !dest) {
             return crow::response(400, "Missing source or dest parameter");
         }
 
         auto results = store.find_one_hop_routes(source, dest);
-        
+
         crow::json::wvalue json;
         json["source"] = source;
         json["destination"] = dest;
-        
+
         std::vector<crow::json::wvalue> routes_json;
         for (const auto& one_hop : results) {
             crow::json::wvalue route_data;
@@ -131,6 +131,37 @@ void AirportHandler::register_routes(crow::App<crow::CORSHandler>& app, DataStor
             route_data["second_leg"] = one_hop.second_leg.to_json();
             route_data["intermediate_airport"] = one_hop.intermediate_airport_iata;
             route_data["total_distance_miles"] = one_hop.total_distance_miles;
+            routes_json.push_back(std::move(route_data));
+        }
+        json["routes"] = std::move(routes_json);
+        json["total_routes"] = results.size();
+
+        return crow::response(200, json);
+    });
+
+    // 4. Direct routes (0-hop)
+    CROW_ROUTE(app, "/api/routes/direct")
+    ([&store](const crow::request& req) {
+        auto source = req.url_params.get("source");
+        auto dest = req.url_params.get("dest");
+
+        if (!source || !dest) {
+            return crow::response(400, "Missing source or dest parameter");
+        }
+
+        auto results = store.find_direct_routes(source, dest);
+
+        crow::json::wvalue json;
+        json["source"] = source;
+        json["destination"] = dest;
+
+        std::vector<crow::json::wvalue> routes_json;
+        for (const auto& direct : results) {
+            crow::json::wvalue route_data;
+            route_data["first_leg"] = direct.first_leg.to_json();
+            route_data["second_leg"] = direct.second_leg.to_json();
+            route_data["intermediate_airport"] = direct.intermediate_airport_iata;
+            route_data["total_distance_miles"] = direct.total_distance_miles;
             routes_json.push_back(std::move(route_data));
         }
         json["routes"] = std::move(routes_json);

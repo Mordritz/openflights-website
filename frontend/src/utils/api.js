@@ -42,12 +42,13 @@ export const deleteAirport = (id) => fetchAPI(`/airports/${id}`, { method: 'DELE
 
 // Routes
 export const getOneHopRoutes = (source, dest) => fetchAPI(`/routes/one-hop?source=${source}&dest=${dest}`);
+export const getDirectRoutes = (source, dest) => fetchAPI(`/routes/direct?source=${source}&dest=${dest}`);
 export const getStats = () => fetchAPI('/stats');
 
 // Search (searches both airlines and airports)
 export async function searchEntities(query) {
   if (!query || query.length < 2) return { airlines: [], airports: [] };
-  
+
   try {
     const [airlines, airports] = await Promise.all([
       getAllAirlines(),
@@ -55,19 +56,40 @@ export async function searchEntities(query) {
     ]);
 
     const lowerQuery = query.toLowerCase();
-    
-    const matchedAirlines = airlines.airlines?.filter(a => 
-      a.iata?.toLowerCase().includes(lowerQuery) || 
-      a.name?.toLowerCase().includes(lowerQuery)
-    ).slice(0, 5) || [];
+    const upperQuery = query.toUpperCase();
 
-    const matchedAirports = airports.airports?.filter(a => 
-      a.iata?.toLowerCase().includes(lowerQuery) || 
+    // Filter airlines
+    const filteredAirlines = airlines.airlines?.filter(a =>
+      a.iata?.toLowerCase().includes(lowerQuery) ||
+      a.name?.toLowerCase().includes(lowerQuery)
+    ) || [];
+
+    // Sort by exact IATA match first, THEN slice
+    const sortedAirlines = filteredAirlines.sort((a, b) => {
+      const aExactMatch = a.iata === upperQuery;
+      const bExactMatch = b.iata === upperQuery;
+      if (aExactMatch && !bExactMatch) return -1;
+      if (!aExactMatch && bExactMatch) return 1;
+      return 0;
+    }).slice(0, 5);
+
+    // Filter airports
+    const filteredAirports = airports.airports?.filter(a =>
+      a.iata?.toLowerCase().includes(lowerQuery) ||
       a.name?.toLowerCase().includes(lowerQuery) ||
       a.city?.toLowerCase().includes(lowerQuery)
-    ).slice(0, 5) || [];
+    ) || [];
 
-    return { airlines: matchedAirlines, airports: matchedAirports };
+    // Sort by exact IATA match first, THEN slice
+    const sortedAirports = filteredAirports.sort((a, b) => {
+      const aExactMatch = a.iata === upperQuery;
+      const bExactMatch = b.iata === upperQuery;
+      if (aExactMatch && !bExactMatch) return -1;
+      if (!aExactMatch && bExactMatch) return 1;
+      return 0;
+    }).slice(0, 5);
+
+    return { airlines: sortedAirlines, airports: sortedAirports };
   } catch (error) {
     console.error('Search error:', error);
     return { airlines: [], airports: [] };

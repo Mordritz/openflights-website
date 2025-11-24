@@ -530,6 +530,59 @@ std::vector<OneHopRoute> DataStore::find_one_hop_routes(
     return results;
 }
 
+// Direct route finding (0-hop)
+std::vector<OneHopRoute> DataStore::find_direct_routes(
+    const std::string& source_iata,
+    const std::string& dest_iata) const {
+
+    auto source_opt = get_airport_by_iata(source_iata);
+    auto dest_opt = get_airport_by_iata(dest_iata);
+
+    if (!source_opt || !dest_opt) {
+        return {};
+    }
+
+    int source_id = source_opt->id;
+    int dest_id = dest_opt->id;
+
+    std::vector<OneHopRoute> results;
+
+    // Find all routes from source
+    auto from_source_it = routes_from_airport_.find(source_id);
+    if (from_source_it == routes_from_airport_.end()) {
+        return {};
+    }
+
+    // Find direct routes from source to destination
+    for (size_t route_idx : from_source_it->second) {
+        const Route& route = routes_[route_idx];
+
+        // Check if this route goes directly to destination with 0 stops
+        if (route.dest_airport_id == dest_id && route.stops == 0) {
+            // Calculate distance
+            double distance = calculate_distance_miles(*source_opt, *dest_opt);
+
+            OneHopRoute direct_route;
+            // For direct routes, both legs are the same
+            direct_route.first_leg = route;
+            direct_route.second_leg = route;
+            direct_route.total_distance_miles = distance;
+            // Intermediate airport is the destination for direct flights
+            direct_route.intermediate_airport_iata = dest_opt->iata;
+
+            results.push_back(direct_route);
+        }
+    }
+
+    // Sort by total distance (ascending)
+    std::sort(results.begin(), results.end(),
+              [](const OneHopRoute& a, const OneHopRoute& b) {
+                  return a.total_distance_miles < b.total_distance_miles;
+              });
+
+    return results;
+}
+
 // Distance calculation using Haversine formula
 double DataStore::calculate_distance_miles(const Airport& a1, const Airport& a2) const {
     return haversine_distance(a1.latitude, a1.longitude, a2.latitude, a2.longitude);

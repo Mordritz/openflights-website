@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { getAllAirlines, getAirportsByAirline, deleteAirline, createAirline } from '../utils/api';
+import { getAllAirlines, getAirportsByAirline, deleteAirline, createAirline, updateAirline } from '../utils/api';
+import { exportToCSV } from '../utils/csvExport';
 
 export default function Airlines() {
   const [airlines, setAirlines] = useState([]);
@@ -9,6 +10,7 @@ export default function Airlines() {
   const [selectedAirline, setSelectedAirline] = useState(null);
   const [airlineAirports, setAirlineAirports] = useState([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
   const [loading, setLoading] = useState(true);
   const [searchParams] = useSearchParams();
 
@@ -27,13 +29,24 @@ export default function Airlines() {
   useEffect(() => {
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
-      setFilteredAirlines(
-        airlines.filter(a =>
-          a.iata?.toLowerCase().includes(query) ||
-          a.name?.toLowerCase().includes(query) ||
-          a.country?.toLowerCase().includes(query)
-        )
+      const upperQuery = searchQuery.toUpperCase();
+
+      const filtered = airlines.filter(a =>
+        a.iata?.toLowerCase().includes(query) ||
+        a.name?.toLowerCase().includes(query) ||
+        a.country?.toLowerCase().includes(query)
       );
+
+      // Sort by exact IATA match first
+      const sorted = filtered.sort((a, b) => {
+        const aExactMatch = a.iata === upperQuery;
+        const bExactMatch = b.iata === upperQuery;
+        if (aExactMatch && !bExactMatch) return -1;
+        if (!aExactMatch && bExactMatch) return 1;
+        return 0;
+      });
+
+      setFilteredAirlines(sorted);
     } else {
       setFilteredAirlines(airlines);
     }
@@ -83,57 +96,73 @@ export default function Airlines() {
     }
   }
 
+  async function handleUpdate(updates) {
+    try {
+      await updateAirline(selectedAirline.id, updates);
+      setShowEditModal(false);
+      await loadAirlines();
+      const refreshed = await getAllAirlines();
+      const updated = refreshed.airlines.find(a => a.id === selectedAirline.id);
+      if (updated) {
+        setSelectedAirline(updated);
+        handleSelectAirline(updated);
+      }
+    } catch (error) {
+      alert('Failed to update airline: ' + error.message);
+    }
+  }
+
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-100 pt-20 flex items-center justify-center">
+      <div className="flex-1 bg-secondary pt-16 flex items-center justify-center">
         <div className="text-xl text-gray-600">Loading airlines...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Hero Header */}
-      <div className="gradient-bg-airlines pt-24 pb-40 relative overflow-hidden">
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-20 right-20 w-64 h-64 bg-white rounded-full blur-3xl"></div>
-          <div className="absolute bottom-10 left-20 w-96 h-96 bg-yellow-200 rounded-full blur-3xl"></div>
+    <div className="flex-1 bg-secondary">
+      <div className="max-w-[1600px] mx-auto px-4 py-12 pt-24">
+        <div className="mb-8">
+          <h1 className="text-4xl font-bold mb-4">Airlines</h1>
+          <p className="text-lg text-gray-600">Discover airline networks across the globe</p>
         </div>
-        
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-          <h1 className="text-5xl font-bold text-white mb-6 text-shadow-strong">Airlines</h1>
-          <p className="text-xl text-white/90 mb-8">Discover airline networks across the globe</p>
-          
-          <div className="flex gap-4">
-            <input
-              type="text"
-              placeholder="Search by IATA code, name, or country..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="flex-1 px-6 py-4 rounded-xl border-0 bg-white/20 backdrop-blur-md text-white placeholder-white/70 focus:ring-2 focus:ring-white/50 focus:outline-none shadow-lg"
-            />
-            <button
-              onClick={() => setShowCreateModal(true)}
-              className="px-8 py-4 bg-white text-pink-600 rounded-xl hover:bg-pink-50 transition-smooth font-bold shadow-xl hover:shadow-2xl transform hover:-translate-y-1"
-            >
-              + New Airline
-            </button>
-          </div>
+
+        <div className="flex gap-4 mb-8">
+          <input
+            type="text"
+            placeholder="Search by IATA code, name, or country..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="flex-1 px-6 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          />
+          <button
+            onClick={() => exportToCSV(filteredAirlines, 'airlines.csv')}
+            className="px-6 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-base font-medium border border-gray-300"
+          >
+            Export CSV
+          </button>
+          <button
+            onClick={() => setShowCreateModal(true)}
+            className="px-6 py-3 bg-black text-white rounded-lg hover:bg-gray-800 transition-base font-medium"
+          >
+            New Airline
+          </button>
         </div>
-      </div>
 
-      {/* Content Area */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-32 pb-16 relative">
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+        <div className="grid grid-cols-1 lg:grid-cols-[1.8fr_1fr] gap-6">
+          <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+            <div className="bg-gray-50 px-6 py-3 border-b border-gray-200">
+              <h2 className="font-semibold text-gray-900">All Airlines ({filteredAirlines.length})</h2>
+            </div>
             <div className="overflow-x-auto max-h-[600px] overflow-y-auto">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50 sticky top-0">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">IATA</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Country</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">IATA</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Country</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -141,11 +170,12 @@ export default function Airlines() {
                     <tr
                       key={airline.id}
                       onClick={() => handleSelectAirline(airline)}
-                      className="hover:bg-purple-50 cursor-pointer transition-colors"
+                      className="hover:bg-gray-50 cursor-pointer transition-base"
                     >
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{airline.iata}</td>
-                      <td className="px-6 py-4 text-sm text-gray-900">{airline.name}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{airline.country}</td>
+                      <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">{airline.iata}</td>
+                      <td className="px-4 py-3 text-sm text-gray-900">{airline.name}</td>
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">{airline.country}</td>
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">{airline.active === 'Y' ? 'Active' : 'Inactive'}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -153,7 +183,7 @@ export default function Airlines() {
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow-lg p-6">
+          <div className="bg-white rounded-lg border border-gray-200 p-6 min-h-[600px]">
             {selectedAirline ? (
               <div>
                 <div className="flex justify-between items-start mb-6">
@@ -161,47 +191,85 @@ export default function Airlines() {
                     <h2 className="text-2xl font-bold text-gray-900">{selectedAirline.name}</h2>
                     <p className="text-gray-600">{selectedAirline.iata} - {selectedAirline.country}</p>
                   </div>
-                  <button
-                    onClick={() => handleDelete(selectedAirline.id)}
-                    className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm"
-                  >
-                    Delete
-                  </button>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setShowEditModal(true)}
+                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-base text-sm font-medium"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => handleDelete(selectedAirline.id)}
+                      className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-base text-sm font-medium"
+                    >
+                      Delete
+                    </button>
+                  </div>
                 </div>
 
                 <div className="space-y-3 mb-6">
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     <div>
-                      <span className="font-semibold text-gray-700">ICAO:</span> {selectedAirline.icao}
+                      <span className="font-semibold text-gray-700">ICAO:</span> {selectedAirline.icao || 'N/A'}
                     </div>
                     <div>
-                      <span className="font-semibold text-gray-700">Callsign:</span> {selectedAirline.callsign}
+                      <span className="font-semibold text-gray-700">Callsign:</span> {selectedAirline.callsign || 'N/A'}
                     </div>
                     <div>
-                      <span className="font-semibold text-gray-700">Active:</span> {selectedAirline.active}
+                      <span className="font-semibold text-gray-700">Status:</span> {selectedAirline.active === 'Y' ? 'Active' : 'Inactive'}
                     </div>
                   </div>
                 </div>
 
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-3">Airports Served</h3>
+                  <div className="flex justify-between items-center mb-3">
+                    <h3 className="text-lg font-semibold text-gray-900">
+                      Airports Served <span className="text-blue-600">({airlineAirports.length})</span>
+                    </h3>
+                    {airlineAirports.length > 0 && (
+                      <button
+                        onClick={() => {
+                          const exportData = airlineAirports.map(item => ({
+                            iata: item?.airport?.iata || 'N/A',
+                            name: item?.airport?.name || 'Unknown',
+                            city: item?.airport?.city || 'Unknown',
+                            country: item?.airport?.country || 'Unknown',
+                            route_count: item.route_count || 0
+                          }));
+                          exportToCSV(exportData, `airports_served_by_${selectedAirline.iata}.csv`);
+                        }}
+                        className="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-base border border-gray-300"
+                      >
+                        Export CSV
+                      </button>
+                    )}
+                  </div>
                   {airlineAirports.length === 0 ? (
                     <p className="text-gray-500 text-sm">No airports found</p>
                   ) : (
                     <div className="space-y-2 max-h-96 overflow-y-auto">
-                      {airlineAirports.map((item) => {
-                        if (!item?.airport) return null;
+                      {airlineAirports.map((item, index) => {
+                        const airport = item?.airport;
+                        if (!airport) return null;
+
+                        const airportId = airport.id || `airport-${index}`;
+                        const airportIata = airport.iata && String(airport.iata).trim() !== '' ? airport.iata : 'N/A';
+                        const airportName = airport.name && String(airport.name).trim() !== '' ? airport.name : 'Unknown Airport';
+                        const airportCity = airport.city && String(airport.city).trim() !== '' ? airport.city : 'Unknown City';
+                        const airportCountry = airport.country && String(airport.country).trim() !== '' ? airport.country : 'Unknown Country';
+                        const routeCount = item.route_count || 0;
+
                         return (
-                          <div key={item.airport.id} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                          <div key={airportId} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg border border-gray-200">
                             <div>
                               <div className="font-semibold text-gray-900">
-                                {item.airport.iata || 'N/A'} - {item.airport.name || 'Unknown'}
+                                {airportIata} - {airportName}
                               </div>
                               <div className="text-sm text-gray-600">
-                                {item.airport.city || 'Unknown'}, {item.airport.country || 'Unknown'}
+                                {airportCity}, {airportCountry}
                               </div>
                             </div>
-                            <div className="text-sm font-semibold text-purple-600">{item.route_count || 0} routes</div>
+                            <div className="text-sm font-semibold text-blue-600">{routeCount} routes</div>
                           </div>
                         );
                       })}
@@ -224,6 +292,63 @@ export default function Airlines() {
           onCreate={handleCreate}
         />
       )}
+
+      {showEditModal && selectedAirline && (
+        <EditAirlineModal
+          airline={selectedAirline}
+          onClose={() => setShowEditModal(false)}
+          onUpdate={handleUpdate}
+        />
+      )}
+    </div>
+  );
+}
+
+function EditAirlineModal({ airline, onClose, onUpdate }) {
+  const [formData, setFormData] = useState({
+    name: airline.name || '',
+    iata: airline.iata || '',
+    icao: airline.icao || '',
+    callsign: airline.callsign || '',
+    country: airline.country || '',
+    active: airline.active || 'Y',
+  });
+
+  function handleSubmit(e) {
+    e.preventDefault();
+    const updates = {};
+    if (formData.name !== airline.name) updates.name = formData.name;
+    if (formData.iata !== airline.iata) updates.iata = formData.iata;
+    if (formData.icao !== airline.icao) updates.icao = formData.icao;
+    if (formData.callsign !== airline.callsign) updates.callsign = formData.callsign;
+    if (formData.country !== airline.country) updates.country = formData.country;
+    if (formData.active !== airline.active) updates.active = formData.active;
+
+    onUpdate(updates);
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-lg p-6 max-w-md w-full">
+        <h2 className="text-2xl font-bold mb-4">Edit Airline</h2>
+        <div className="text-sm text-gray-600 mb-4 p-2 bg-gray-100 rounded">ID: {airline.id} (cannot be changed)</div>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <input type="text" placeholder="Name *" required className="w-full px-3 py-2 border rounded" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} />
+          <input type="text" placeholder="IATA *" required className="w-full px-3 py-2 border rounded" value={formData.iata} onChange={(e) => setFormData({...formData, iata: e.target.value})} />
+          <input type="text" placeholder="ICAO" className="w-full px-3 py-2 border rounded" value={formData.icao} onChange={(e) => setFormData({...formData, icao: e.target.value})} />
+          <input type="text" placeholder="Callsign" className="w-full px-3 py-2 border rounded" value={formData.callsign} onChange={(e) => setFormData({...formData, callsign: e.target.value})} />
+          <input type="text" placeholder="Country *" required className="w-full px-3 py-2 border rounded" value={formData.country} onChange={(e) => setFormData({...formData, country: e.target.value})} />
+          <select className="w-full px-3 py-2 border rounded" value={formData.active} onChange={(e) => setFormData({...formData, active: e.target.value})}>
+            <option value="Y">Active</option>
+            <option value="N">Inactive</option>
+          </select>
+
+          <div className="flex gap-3">
+            <button type="submit" className="flex-1 bg-blue-600 text-white py-2 rounded hover:bg-blue-700 font-semibold">Update</button>
+            <button type="button" onClick={onClose} className="flex-1 bg-gray-300 text-gray-700 py-2 rounded hover:bg-gray-400">Cancel</button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }
@@ -262,9 +387,9 @@ function CreateAirlineModal({ onClose, onCreate }) {
             <option value="Y">Active</option>
             <option value="N">Inactive</option>
           </select>
-          
+
           <div className="flex gap-3">
-            <button type="submit" className="flex-1 bg-purple-600 text-white py-2 rounded hover:bg-purple-700">Create</button>
+            <button type="submit" className="flex-1 bg-blue-600 text-white py-2 rounded hover:bg-blue-700">Create</button>
             <button type="button" onClick={onClose} className="flex-1 bg-gray-300 text-gray-700 py-2 rounded hover:bg-gray-400">Cancel</button>
           </div>
         </form>
