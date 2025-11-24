@@ -13,6 +13,7 @@ export default function Airlines() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [loading, setLoading] = useState(true);
   const [searchParams] = useSearchParams();
+  const [sortConfig, setSortConfig] = useState({ column: 'iata', direction: 'asc' });
 
   useEffect(() => {
     loadAirlines();
@@ -112,6 +113,62 @@ export default function Airlines() {
     }
   }
 
+  function handleSort(column) {
+    setSortConfig(prev => ({
+      column,
+      direction: prev.column === column && prev.direction === 'asc' ? 'desc' : 'asc'
+    }));
+  }
+
+  function getSortedAirlines() {
+    const upperQuery = searchQuery.toUpperCase();
+    const hasExactMatch = searchQuery && filteredAirlines.some(a => a.iata === upperQuery);
+
+    if (hasExactMatch) {
+      // Separate exact match from others
+      const exactMatch = filteredAirlines.filter(a => a.iata === upperQuery);
+      const others = filteredAirlines.filter(a => a.iata !== upperQuery);
+
+      // Sort the non-exact matches
+      const sortedOthers = others.sort((a, b) => {
+        let aVal, bVal;
+
+        if (sortConfig.column === 'status') {
+          aVal = a.active === 'Y' ? 'active' : 'inactive';
+          bVal = b.active === 'Y' ? 'active' : 'inactive';
+        } else {
+          aVal = (a[sortConfig.column] || '').toString().toLowerCase();
+          bVal = (b[sortConfig.column] || '').toString().toLowerCase();
+        }
+
+        if (aVal < bVal) return sortConfig.direction === 'asc' ? -1 : 1;
+        if (aVal > bVal) return sortConfig.direction === 'asc' ? 1 : -1;
+        return 0;
+      });
+
+      // Return exact match first, then sorted others
+      return [...exactMatch, ...sortedOthers];
+    }
+
+    // Normal sort when no exact match
+    const sorted = [...filteredAirlines].sort((a, b) => {
+      let aVal, bVal;
+
+      if (sortConfig.column === 'status') {
+        aVal = a.active === 'Y' ? 'active' : 'inactive';
+        bVal = b.active === 'Y' ? 'active' : 'inactive';
+      } else {
+        aVal = (a[sortConfig.column] || '').toString().toLowerCase();
+        bVal = (b[sortConfig.column] || '').toString().toLowerCase();
+      }
+
+      if (aVal < bVal) return sortConfig.direction === 'asc' ? -1 : 1;
+      if (aVal > bVal) return sortConfig.direction === 'asc' ? 1 : -1;
+      return 0;
+    });
+    return sorted;
+  }
+
   if (loading) {
     return (
       <div className="flex-1 bg-secondary pt-16 flex items-center justify-center">
@@ -159,14 +216,22 @@ export default function Airlines() {
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50 sticky top-0">
                   <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">IATA</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Country</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                    <th onClick={() => handleSort('iata')} className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer hover:bg-gray-100 select-none">
+                      IATA {sortConfig.column === 'iata' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                    </th>
+                    <th onClick={() => handleSort('name')} className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer hover:bg-gray-100 select-none">
+                      Name {sortConfig.column === 'name' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                    </th>
+                    <th onClick={() => handleSort('country')} className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer hover:bg-gray-100 select-none">
+                      Country {sortConfig.column === 'country' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                    </th>
+                    <th onClick={() => handleSort('status')} className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer hover:bg-gray-100 select-none">
+                      Status {sortConfig.column === 'status' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {filteredAirlines.map((airline) => (
+                  {getSortedAirlines().map((airline) => (
                     <tr
                       key={airline.id}
                       onClick={() => handleSelectAirline(airline)}
