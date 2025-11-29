@@ -1,0 +1,31 @@
+# Build directories
+build/
+cmake-build-*/
+
+# Frontend (not needed for backend deployment)
+frontend/
+
+# Git
+.git/
+.gitignore
+
+# Documentation
+README.md
+*.md
+!CLAUDE.md
+
+# IDE
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.log
+
+# Data backup files (keep only .csv files)
+*.dat
+*_sample.csv
