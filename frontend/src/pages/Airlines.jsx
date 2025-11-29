@@ -182,7 +182,7 @@ export default function Airlines() {
       <div className="max-w-[1600px] mx-auto px-4 py-12 pt-24">
         <div className="mb-8">
           <h1 className="text-4xl font-bold mb-4">Airlines</h1>
-          <p className="text-lg text-gray-600">Discover airline networks across the globe</p>
+          <p className="text-lg text-gray-600">Explore and manage airline data from January 2012</p>
         </div>
 
         <div className="flex gap-4 mb-8">

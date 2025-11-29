@@ -110,8 +110,9 @@ data/*.dat
 # Logs
 *.log
 
-# Context and Prompts
-*.md
+# Claude
+CLAUDE.md
+prompts/
 
 # Artifacts
 MyCppCode.dSYM/
