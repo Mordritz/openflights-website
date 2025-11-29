@@ -1,4 +1,4 @@
-const API_BASE = '/api';
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://openflights-website-production.up.railway.app/api';
 
 // Generic fetch helper
 async function fetchAPI(endpoint, options = {}) {

@@ -49,9 +49,9 @@ RUN chown -R appuser:appuser /app
 # Switch to non-root user
 USER appuser
 
-# Expose port (Railway will override with PORT env var)
+# Expose port (Backend infra will override with PORT env var)
 EXPOSE 8080
 
 # Run the server
-# Railway sets PORT env var, default to 8080 if not set
+# Backend infra sets PORT env var, default to 8080 if not set
 CMD sh -c './flight_server --port ${PORT:-8080} --data-dir data'

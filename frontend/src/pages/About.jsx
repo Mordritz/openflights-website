@@ -32,7 +32,7 @@ export default function About() {
           <h2 className="text-3xl font-bold mb-4">About Me</h2>
           <p className="text-gray-700 leading-relaxed mb-4">
             I'm a product manager and hobbyist game developer who discovered his passion for programming just in time (c.a. 2022) to watch language models
-            unleash havoc on the discipline. In my experience I have found them quite useful as a resource.
+            unleash havoc on the discipline. This was my first time building something using LLM-generated code exclusively.
           </p>
           <p className="text-gray-700 leading-relaxed">
             I have a wide range of interests which you can learn more about here!
