@@ -1,5 +1,7 @@
 # About
 
+CWID: 20695849
+
 OpenFlights Data Explorer is a student project I completed for my data structures & algorithms class. The primary motivation for this project was to experiment with 
 pure vibe-coding workflows and compare to the hybrid human/AI workflows which I primarily use.
 
